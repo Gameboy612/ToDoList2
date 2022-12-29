@@ -60,10 +60,12 @@ export default function HomeScreen({ navigation }) {
     useEffect(()=>{
         
         async function fetchData() {
-            // await AsyncStorage.setItem(
-            //     "@ToDoList:task",
-            //     "[]"
-            // );
+            if(!true) {
+                await AsyncStorage.setItem(
+                    "@ToDoList:task",
+                    "[]"
+                );
+            }
             // await _addData({tag: ["Daily"], task: "Clean House", progress: {current: 0, max:1}, points: 25, date:{due_date:2672048923895 , full_day: false}})
             console.log('loading data')
             setTaskItems(JSON.parse(await _getData()))
@@ -104,9 +106,15 @@ export default function HomeScreen({ navigation }) {
                                     if(!item.tag.includes(tag)) remove = true
                                 }
                             )
-                            if(!remove) return (
-                                <BasicQuestItem key={index} task={item}/>
-                            )
+                            if(!remove) {
+                                const pass_data = {card:item, index:index}
+                                return (
+                                <TouchableOpacity onPress={() => {navigation.navigate("AddQuest", pass_data)}}>
+                                    <BasicQuestItem key={index} task={item}/>
+
+                                </TouchableOpacity>
+                                )
+                        }
                         }
                     )
                 }

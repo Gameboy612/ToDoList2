@@ -5,10 +5,14 @@ import { Dimensions, View, TouchableOpacity, Text, StyleSheet, ScrollView } from
 const width = Dimensions.get("screen").width
 const height = Dimensions.get("screen").height
 
-export default function AddQuestScreen({ navigation }) {
+export default function AddQuestScreen({ navigation, route }) {
 
-    
-    
+    let card = route.params.card
+    let index = route.params.index
+
+    if(!card) card = false
+    if(index == undefined) index = -1
+    console.log(card)
     return (
         <View>
             <ScrollView
@@ -19,7 +23,7 @@ export default function AddQuestScreen({ navigation }) {
                 style={styles.screen_wrapper}
             >
                 <View style={styles.input_card}>
-                    <InputCard task={{tag: ["Daily"], task: "Clean House", progress: {current: 0, max:1}, points: 25, date:{due_date:2672048923895 , full_day: false}}} navigation={navigation}/>
+                    <InputCard task={{tag: ["Daily"], task: "Clean House", progress: {current: 0, max:1}, points: 25, date:{due_date:2672048923895 , full_day: false}}} navigation={navigation} card={card} index={index}/>
                 </View>
 
             </ScrollView>

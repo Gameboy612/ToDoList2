@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Text, View, TextInput, StyleSheet, Image, TouchableOpacity, Button, Platform } from 'react-native'
 import InputCardData from './InputCardData'
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -14,7 +14,9 @@ export default function InputCard(props) {
     const [isHour12, setIsHour12] = useState(false)
     const [dateColor, setDateColor] = useState(props.task.date.due_date < new Date() ? dateDueColor : dateRegularColor)
 
-    const { title, setTitle, point, setPoint, progress, setProgress, maxProgress, setMaxProgress, date, setDate} = InputCardData()
+    var {  task, setTask, points, setPoints, progressCurrent, setProgressCurrent, progressMax, setProgressMax, date_DueDate, setDate_DueDate, date_FullDay, setDate_FullDay } = InputCardData()
+
+    const index = props.index
 
     var _addData = async (data) => {
         try {
@@ -53,18 +55,49 @@ export default function InputCard(props) {
         }
     }
 
+    var _editData = async (data, i) => {
+        console.log("editing index: " + i)
+        try {
+            let olddata = await AsyncStorage.getItem("@ToDoList:task");
+            if(olddata == null) {
+                await AsyncStorage.setItem(
+                    "@ToDoList:task",
+                    "[]"
+                );
+            }
+            
+            if(i == -1) {
+                await AsyncStorage.setItem(
+                    "@ToDoList:task",
+                    JSON.stringify([...JSON.parse(olddata), data])
+                )
+            } else {
+                console.log("REPLACING DATA")
+                let newdata = JSON.parse(olddata)
+                newdata[i] = data
+                await AsyncStorage.setItem(
+                    "@ToDoList:task",
+                    JSON.stringify(newdata)
+                )
+                console.log(await _getData())
+            }
+        } catch (error) {
+        // Error saving data
+        alert('error')
+        }
+    }
 
     async function doneButton() {
-        console.log("Title:" + title)
-        await _addData({
+        console.log("Task:" + task)
+        await _editData({
             tag:["Daily"],
-            task: title == null ? "Lorem Ipsum" : title,
-            progress: {current: progress == null ? 0 : progress, max: maxProgress == null ? 1 : maxProgress},
-            points: point == null ? 25 : point,
+            task: task == null ? "Lorem Ipsum" : task,
+            progress: {current: progressCurrent == null ? 0 : progressCurrent, max: progressMax == null ? 1 : progressMax},
+            points: points == null ? 25 : points,
             date: {
-                due_date: date,
-                full_day: false
-            }})
+                due_date: date_DueDate,
+                full_day: date_FullDay
+            }}, index)
         // await _addData({tag: ["Daily"], task: "Clean House", progress: {current: 0, max:1}, points: 25, date:{due_date:2672048923895 , full_day: false}})
         
         console.log(await _getData())
@@ -72,13 +105,42 @@ export default function InputCard(props) {
         props.navigation.popToTop()
         // props.navigation.push('Home');
     }
+
+    useEffect(()=>{
+        console.log("Loading card input fields")
+        if(props.card) {
+            const card = props.card
+            console.log("Found data" + JSON.stringify(card))
+            // Importing card data
+            setTask(card.task)
+            setProgressCurrent(card.progress.current)
+            setProgressMax(card.progress.max)
+            setPoints(card.points)
+            setDate_DueDate(new Date(card.date.due_date))
+            setDate_FullDay(card.date.full_day)
+            
+            console.log(task)
+        }
+        else {
+            console.log("Generating new card")
+        }
+        console.log("Card generated")
+	}, [])
     
     return (
         <>
-        <View style={styles.done_button}>
-            <TouchableOpacity style={styles.button_presser} onPress={doneButton}>
-                <Text style={styles.done_text}>Done</Text>
-            </TouchableOpacity>
+        <View style={[styles.quest_flexdir, {flexDirection: 'row-reverse'}]}>
+            {/* <View style={styles.delete}>
+                <TouchableOpacity style={styles.button_presser} onPress={deleteButton}>
+                    <Text style={styles.done_text}>Delete</Text>
+                </TouchableOpacity>
+            </View> */}
+            <View style={styles.done_button}>
+                <TouchableOpacity style={styles.button_presser} onPress={doneButton}>
+                    <Text style={styles.done_text}>Done</Text>
+                </TouchableOpacity>
+            </View>
+
         </View>
 
 
@@ -93,7 +155,7 @@ export default function InputCard(props) {
 
                         {/* {Quest Name} */}
                         <View>
-                            <TextInput style={styles.title} autoFocus value={title} onChangeText={(text) => setTitle(text)} placeholderTextColor={ "#dadada" } placeholder={"Title"}/>
+                            <TextInput style={styles.task} autoFocus value={task} onChangeText={(text) => setTask(text)} placeholderTextColor={ "#dadada" } placeholder={"Task"}/>
                         </View>
 
                         {/* {Line} */}
@@ -103,7 +165,7 @@ export default function InputCard(props) {
                         <View style={styles.reward_wrapper}>
                             <View style={[styles.quest_flexdir, {justifyContent: 'space-between'}]}>
                                 <View style={{flexDirection: 'row', alignItems: 'flex-end'}}>
-                                    <TextInput style={styles.point_text} keyboardType="number-pad" value={point == null || isNaN(point.toString()) ? null : point.toString()} onChangeText={(text) => setPoint(parseInt(text))} placeholder={"25"}/>
+                                    <TextInput style={styles.point_text} keyboardType="number-pad" value={points == null || isNaN(points.toString()) ? null : points.toString()} onChangeText={(text) => setPoints(parseInt(text))} placeholder={"25"}/>
                                     {/* <Text style={styles.point_text}>{props.task.points}</Text> */}
                                     <Text style={styles.point_symbol}> PPt</Text>
                                 </View>
@@ -127,8 +189,8 @@ export default function InputCard(props) {
                                                 }
                                             ]}
                                         keyboardType="number-pad"
-                                        defaultValue={progress == null || isNaN(progress.toString()) ? null : progress.toString()}
-                                        onChangeText={(text) => setProgress(parseInt(text))}
+                                        defaultValue={progressCurrent == null || isNaN(progressCurrent.toString()) ? null : progressCurrent.toString()}
+                                        onChangeText={(text) => setProgressCurrent(parseInt(text))}
                                         placeholder={"0"}
                                         placeholderTextColor="#add"
                                         />
@@ -152,8 +214,8 @@ export default function InputCard(props) {
                                                 }
                                             ]}
                                         keyboardType="number-pad"
-                                        value={maxProgress == null || isNaN(maxProgress.toString()) ? null : maxProgress.toString()}
-                                        onChangeText={(text) => setMaxProgress(parseInt(text))}
+                                        value={progressMax == null || isNaN(progressMax.toString()) ? null : progressMax.toString()}
+                                        onChangeText={(text) => setProgressMax(parseInt(text))}
                                         placeholder={"1"}
                                         placeholderTextColor="#add"
                                         />
@@ -165,14 +227,19 @@ export default function InputCard(props) {
                         {/* {Due Date} */}
                         <TouchableOpacity style={{width:"100%", height:30}} onPress={() => alert("This feature is WIP.")}>
                             <Text>
-                                {
-                                    true && <Text style={{color:"white"}}>Due: </Text>
-                                }
-                                <Text style={{color: dateColor}}>{date.getMonth()}/{date.getDay()}
+                                <Text style={{color:"white"}}>Due: </Text>
+                                <Text style={{color: dateColor}}>{typeof date_DueDate.getMonth === 'function' ? date_DueDate.getDate() : new Date().getDate()}/{typeof date_DueDate.getMonth === 'function' ? date_DueDate.getMonth() + 1 : new Date().getMonth() + 1}
                                 
                                 {
-                                    date.getFullYear() != new Date().getFullYear() ?
-                                    "/" + date.getFullYear().toString()
+                                    typeof date_DueDate.getFullYear === 'function'
+                                    ?
+                                    (
+                                        date_DueDate.getFullYear() != new Date().getFullYear()
+                                        ?
+                                        "/" + date_DueDate.getFullYear().toString()
+                                        :
+                                        ""
+                                    )
                                     :
                                     ""
                                 }
@@ -182,7 +249,11 @@ export default function InputCard(props) {
                                 {
                                     !props.task.date.full_day && <Text style={{color: dateColor}}>{"  "}
                                         {
-                                            date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: isHour12 })
+                                            typeof date_DueDate.getFullYear === 'function'
+                                            ?
+                                            date_DueDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: isHour12 })
+                                            :
+                                            ""
                                         }
                                     </Text>
                                 }
@@ -250,7 +321,7 @@ const styles = StyleSheet.create(
             paddingHorizontal: 20,
             flex: 3
         },
-        title: {
+        task: {
             flexWrap: 'wrap',
             color: 'white',
             fontSize: 18
@@ -284,7 +355,9 @@ const styles = StyleSheet.create(
             fontSize: 14
         },
         progress_text: {
-            lineHeight: 30
+            lineHeight: 30,
+            width: 'auto'
+            
         }
     }
 )

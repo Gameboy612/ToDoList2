@@ -2,13 +2,13 @@ import { useState } from 'react'
 
 export default function cardData() {
     console.log('taking data')
-    const [title, setTitle] = useState(null)
-    const [point, setPoint] = useState(null)
-    const [progress, setProgress] = useState(null)
-    const [maxProgress, setMaxProgress] = useState(null)
+    const [task, setTask] = useState(null)
+    const [points, setPoints] = useState(null)
+    const [progressCurrent, setProgressCurrent] = useState(null)
+    const [progressMax, setProgressMax] = useState(null)
     
-    const [date, setDate] = useState(new Date())
+    const [date_DueDate, setDate_DueDate] = useState(new Date())
+    const [date_FullDay, setDate_FullDay] = useState(false)
 
-    console.log('returning data: ' + title)
-    return { title, setTitle, point, setPoint, progress, setProgress, maxProgress, setMaxProgress, date, setDate}
+    return { task, setTask, points, setPoints, progressCurrent, setProgressCurrent, progressMax, setProgressMax, date_DueDate, setDate_DueDate, date_FullDay, setDate_FullDay }
 }

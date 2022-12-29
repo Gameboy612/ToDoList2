@@ -11,7 +11,7 @@ export default function BasicQuestItem(props) {
     const [dateColor, setDateColor] = useState(getDateColor)
     
     function getDateColor() {
-        return props.task.date.due_date < new Date() ? dateDueColor : dateRegularColor
+        return new Date(props.task.date.due_date) < new Date() ? dateDueColor : dateRegularColor
     }
     useEffect(()=>{
         
