@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Text, View, TextInput, StyleSheet, Image, TouchableOpacity, Button, Platform } from 'react-native'
+import { Text, View, TextInput, StyleSheet, Image, TouchableOpacity, Button, Platform, Alert } from 'react-native'
 import InputCardData from './InputCardData'
 import * as api from '../../../../scripts/api'
 import DueDateEditor from './DueDateEditor';
@@ -39,7 +39,29 @@ export default function InputCard(props) {
         // props.navigation.push('Home');
     }
 
+
+
     async function deleteButton() {
+        Alert.alert(
+            "Warning!",
+            "Are you sure you want to delete this task?",
+            [
+                {
+                    text: "Cancel ",
+                    style: "cancel"
+                },
+                {
+                    text: "CONFIRM",
+                    onPress: async () => {
+                        await api._removeData(index);
+                        props.navigation.popToTop()
+                    }
+                }
+            ],
+            {
+              cancelable: true
+            }
+        );
 
     }
 
@@ -73,15 +95,16 @@ export default function InputCard(props) {
 
     return (
         <>
-        <View style={[styles.quest_flexdir, {flexDirection: 'row-reverse'}]}>
-            <View style={styles.delete}>
-                <TouchableOpacity style={styles.button_presser} onPress={deleteButton}>
+        <View style={[styles.top_bar, { flexDirection: 'row', justifyContent: "flex-end"}]}>
+            {   
+                index != -1 &&
+                <TouchableOpacity onPress={deleteButton}>
                     <Image 
                         style={styles.stretch}
                         source={require('../../../../assets/buttons/rubbish_bin.png')}
                         />
                 </TouchableOpacity>
-            </View>
+            }
             <View style={styles.done_button}>
                 <TouchableOpacity style={styles.button_presser} onPress={doneButton}>
                     <Text style={styles.done_text}>Done</Text>
@@ -201,9 +224,11 @@ export default function InputCard(props) {
 
 const styles = StyleSheet.create(
     {
-        done_button: {
+        top_bar: {
             marginTop: 20,
-            marginRight: 25,
+            marginRight: 25
+        },
+        done_button: {
             alignSelf: 'flex-end',
             width: 80,
             height: 40,
@@ -289,6 +314,10 @@ const styles = StyleSheet.create(
         stretch: {
             width: 30,
             height: 30
+        },
+        delete: {
+            height: 0,
+            alignSelf: "flex-end"
         }
     }
 )

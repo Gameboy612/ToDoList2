@@ -31,16 +31,18 @@ export default function BasicQuestItem(props) {
     useEffect(()=>{
         async function fetchData() {
             const newcard = await api._getData(index)
-            setDateColor(new Date(newcard.date.due_date) < new Date() ? dateDueColor : dateRegularColor)
-            setCard(newcard)
-            // Refresh Data
-            setProgressCurrent(newcard.progress.current)
-            setProgressMax(newcard.progress.max)
-            setIsCompleted(newcard.progress.current >= newcard.progress.max)
+            if(newcard) {
+                setDateColor(new Date(newcard.date.due_date) < new Date() ? dateDueColor : dateRegularColor)
+                setCard(newcard)
+                // Refresh Data
+                setProgressCurrent(newcard.progress.current)
+                setProgressMax(newcard.progress.max)
+                setIsCompleted(newcard.progress.current >= newcard.progress.max)
+            }
         }
         const unsubscribe = navigation.addListener('focus', () => {
             fetchData();
-          });
+        });
       
           return unsubscribe;
 	}, [navigation])

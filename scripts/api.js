@@ -88,6 +88,12 @@ export var _resetData = async () => {
     _setData("[]")
 }
 
+export var _removeData = async (i) => {
+    let olddata = JSON.parse(await _getData())
+    let newdata = [...olddata]
+    newdata.splice(i, 1)
+    await _setData(JSON.stringify(newdata))
+}
 
 
 export async function setProgress(i, set=0) {
