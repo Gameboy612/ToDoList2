@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react'
 import { Text, View, TextInput, StyleSheet, Image, TouchableOpacity, Button, Platform } from 'react-native'
 import InputCardData from './InputCardData'
 import * as api from '../../../../scripts/api'
-
-
+import DueDateEditor from './DueDateEditor';
 
 export default function InputCard(props) {
     const dateDueColor = '#ffb7c0'
@@ -52,7 +51,7 @@ export default function InputCard(props) {
             setDate_DueDate(new Date(card.date.due_date))
             setDate_FullDay(card.date.full_day)
             
-            console.log(task)
+            console.log(card)
         }
 
         console.log("Loading card input fields")
@@ -175,40 +174,13 @@ export default function InputCard(props) {
                         </View>
 
                         {/* {Due Date} */}
-                        <TouchableOpacity style={{width:"100%", height:30}} onPress={() => alert("This feature is WIP.")}>
-                            <Text>
-                                <Text style={{color:"white"}}>Due: </Text>
-                                <Text style={{color: dateColor}}>{typeof date_DueDate.getMonth === 'function' ? date_DueDate.getDate() : new Date().getDate()}/{typeof date_DueDate.getMonth === 'function' ? date_DueDate.getMonth() + 1 : new Date().getMonth() + 1}
-                                
-                                {
-                                    typeof date_DueDate.getFullYear === 'function'
-                                    ?
-                                    (
-                                        date_DueDate.getFullYear() != new Date().getFullYear()
-                                        ?
-                                        "/" + date_DueDate.getFullYear().toString()
-                                        :
-                                        ""
-                                    )
-                                    :
-                                    ""
-                                }
-                            
-                                </Text>
-                                
-                                {
-                                    !props.task.date.full_day && <Text style={{color: dateColor}}>{"  "}
-                                        {
-                                            typeof date_DueDate.getFullYear === 'function'
-                                            ?
-                                            date_DueDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: isHour12 })
-                                            :
-                                            ""
-                                        }
-                                    </Text>
-                                }
-                            </Text>
-                        </TouchableOpacity>
+                        <DueDateEditor
+                            dateColor={dateColor}
+                            date_DueDate={date_DueDate}
+                            setDate_DueDate = {setDate_DueDate}
+                            date_FullDay={date_FullDay}
+                            isHour12={isHour12}
+                            />
                         
                     </View>
                 </View>
