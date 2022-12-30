@@ -30,8 +30,8 @@ export default function BasicQuestItem(props) {
     
     useEffect(()=>{
         async function fetchData() {
-            setDateColor(getDateColor)
             const newcard = await api._getData(index)
+            setDateColor(new Date(newcard.date.due_date) < new Date() ? dateDueColor : dateRegularColor)
             setCard(newcard)
             // Refresh Data
             setProgressCurrent(newcard.progress.current)

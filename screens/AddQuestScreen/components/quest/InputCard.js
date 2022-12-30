@@ -34,9 +34,13 @@ export default function InputCard(props) {
                 due_date: date_DueDate,
                 full_day: date_FullDay
             }}, index)
-        
+        await api.sortData()
         props.navigation.popToTop()
         // props.navigation.push('Home');
+    }
+
+    async function deleteButton() {
+
     }
 
     useEffect(()=>{
@@ -70,11 +74,14 @@ export default function InputCard(props) {
     return (
         <>
         <View style={[styles.quest_flexdir, {flexDirection: 'row-reverse'}]}>
-            {/* <View style={styles.delete}>
+            <View style={styles.delete}>
                 <TouchableOpacity style={styles.button_presser} onPress={deleteButton}>
-                    <Text style={styles.done_text}>Delete</Text>
+                    <Image 
+                        style={styles.stretch}
+                        source={require('../../../../assets/buttons/rubbish_bin.png')}
+                        />
                 </TouchableOpacity>
-            </View> */}
+            </View>
             <View style={styles.done_button}>
                 <TouchableOpacity style={styles.button_presser} onPress={doneButton}>
                     <Text style={styles.done_text}>Done</Text>
@@ -278,6 +285,10 @@ const styles = StyleSheet.create(
         },
         progress_text: {
             lineHeight: 30
+        },
+        stretch: {
+            width: 30,
+            height: 30
         }
     }
 )

@@ -1,4 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AppRegistry } from 'react-native-web';
+
+const ascending = true
 
 const STORAGE_LOCATION = "@ToDoList:task"
 const COMPLETED_LOCATION = "@ToDoList:completed"
@@ -74,11 +77,15 @@ export var _editData = async (data, i) => {
     }
 }
 
-export var _resetData = async () => {
+export var _setData = async (data) => {
     await AsyncStorage.setItem(
         STORAGE_LOCATION,
-        "[]"
+        data
     );
+}
+
+export var _resetData = async () => {
+    _setData("[]")
 }
 
 
@@ -103,3 +110,10 @@ export async function getProgress(i) {
 
 
 
+
+export async function sortData() {
+    let data = JSON.parse(await _getData())
+    console.log(data)
+    data.sort((a,b) => {return a ? (new Date(a.date.due_date).getTime() - new Date(b.date.due_date).getTime()) * (ascending * 2 - 1) : 0})
+    await _setData(JSON.stringify(data))
+}

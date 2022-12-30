@@ -4,18 +4,18 @@ import { Dimensions, View, TouchableOpacity, Text, StyleSheet, ScrollView } from
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { render } from 'react-dom';
 import * as api from '../scripts/api'
+import TimelineDate from './HomeScreen/components/quest/TimelineDate';
 
 
 const width = Dimensions.get("screen").width
 
 export default function HomeScreen({ navigation }) {
     const [taskItems, setTaskItems] = useState([])
-
-    const [ascending, setAscending] = useState(true)
-
     const [searchTags, setSearchTags] = useState(
         []
     )
+
+
 
 
 
@@ -53,8 +53,8 @@ export default function HomeScreen({ navigation }) {
             >
                 <View style={styles.inner_padding}>
                 {
-                    [...taskItems].sort((a,b) => {return a ? (a.date.due_date - b.date.due_date) * (ascending * 2 - 1) : 0}).map(
-                        (item, index) => {
+                    [...taskItems].map(
+                        (item, index, array) => {
                             var remove = false
                             searchTags.forEach(
                                 tag => {
@@ -63,11 +63,24 @@ export default function HomeScreen({ navigation }) {
                             )
                             if(!remove) {
                                 const pass_data = {card:item, index:index}
+                                console.log(pass_data)
                                 return (
-                                <TouchableOpacity key={index} onPress={() => {navigation.navigate("AddQuest", pass_data)}}>
-                                    <BasicQuestItem card={item} index={index} navigation={navigation}/>
-
-                                </TouchableOpacity>
+                                <View key={index}>
+                                    {
+                                        /* Check if date changed */
+                                        (index == 0
+                                        ||
+                                        new Date(array[index].date.due_date).getDate() != new Date(array[index - 1].date.due_date).getDate())
+                                        &&
+                                        <TimelineDate date={array[index].date.due_date} index={index} />
+                                    }
+                                    <TouchableOpacity
+                                        
+                                        onPress={() => {navigation.navigate("AddQuest", pass_data)}}
+                                        >
+                                        <BasicQuestItem card={item} index={index} navigation={navigation}/>
+                                    </TouchableOpacity>
+                                </View>
                                 )
                         }
                         }
