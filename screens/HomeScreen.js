@@ -3,50 +3,12 @@ import BasicQuestItem from './HomeScreen/components/quest/BasicQuestItem';
 import { Dimensions, View, TouchableOpacity, Text, StyleSheet, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { render } from 'react-dom';
+import * as api from '../scripts/api'
 
 
 const width = Dimensions.get("screen").width
 
 export default function HomeScreen({ navigation }) {
-    var _addData = async (data) => {
-        try {
-            let olddata = await AsyncStorage.getItem("@ToDoList:task");
-            if(olddata == null) {
-                await AsyncStorage.setItem(
-                    "@ToDoList:task",
-                    "[]"
-                );
-            }
-            
-            await AsyncStorage.setItem(
-                "@ToDoList:task",
-                JSON.stringify([...JSON.parse(olddata), data])
-            )
-        } catch (error) {
-        // Error saving data
-        alert('error')
-        }
-    };
-
-    var _getData = async () => {
-        try {
-            let olddata = await AsyncStorage.getItem("@ToDoList:task");
-            if(olddata == null) {
-                await AsyncStorage.setItem(
-                    "@ToDoList:task",
-                    "[]"
-                );
-                return "[]"
-            }
-            return olddata
-        }
-        catch(error) {
-            alert(error)
-        }
-    }
-    
-    
-
     const [taskItems, setTaskItems] = useState([])
 
     const [ascending, setAscending] = useState(true)
@@ -58,23 +20,16 @@ export default function HomeScreen({ navigation }) {
 
 
     useEffect(()=>{
-        
         async function fetchData() {
-            if(!true) {
-                await AsyncStorage.setItem(
-                    "@ToDoList:task",
-                    "[]"
-                );
-            }
-            // await _addData({tag: ["Daily"], task: "Clean House", progress: {current: 0, max:1}, points: 25, date:{due_date:2672048923895 , full_day: false}})
+            // await api._resetData()
+            // await api._addData({tag: ["Daily"], task: "Clean House", progress: {current: 0, max:1}, points: 25, date:{due_date:2672048923895 , full_day: false}})
             console.log('loading data')
-            setTaskItems(JSON.parse(await _getData()))
+            setTaskItems(JSON.parse(await api._getData()))
         }
         
 
         const unsubscribe = navigation.addListener('focus', () => {
             fetchData();
-            //Put your Data loading function here instead of my loadData()
           });
       
           return unsubscribe;
@@ -109,8 +64,8 @@ export default function HomeScreen({ navigation }) {
                             if(!remove) {
                                 const pass_data = {card:item, index:index}
                                 return (
-                                <TouchableOpacity onPress={() => {navigation.navigate("AddQuest", pass_data)}}>
-                                    <BasicQuestItem key={index} task={item}/>
+                                <TouchableOpacity key={index} onPress={() => {navigation.navigate("AddQuest", pass_data)}}>
+                                    <BasicQuestItem card={item} index={index} navigation={navigation}/>
 
                                 </TouchableOpacity>
                                 )

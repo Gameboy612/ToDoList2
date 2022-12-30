@@ -1,22 +1,49 @@
 import { useState, useEffect } from "react"
-import { Image, Text, View, StyleSheet } from "react-native"
+import { Image, Text, View, StyleSheet, TouchableOpacity } from "react-native"
+import * as api from "../../../../scripts/api"
 
 
 export default function BasicQuestItem(props) {
     const dateDueColor = '#ffb7c0'
     const dateRegularColor = "#d5fcff"
 
-    const [isCompleted, setIsCompleted] = useState(props.task.progress.current >= props.task.progress.max)
+    const index = props.index
+    const [card, setCard] = useState(props.card)
+
+    const [progressCurrent, setProgressCurrent] = useState(card.progress.current)
+    const [progressMax, setProgressMax] = useState(card.progress.max)
+
+    const [isCompleted, setIsCompleted] = useState(progressCurrent >= progressMax)
     const [isHour12, setIsHour12] = useState(false)
     const [dateColor, setDateColor] = useState(getDateColor)
     
-    function getDateColor() {
-        return new Date(props.task.date.due_date) < new Date() ? dateDueColor : dateRegularColor
+    const navigation = props.navigation
+
+    function updateIsCompleted() {
+        setIsCompleted(progressCurrent >= progressMax)
     }
+
+    function getDateColor() {
+        return new Date(card.date.due_date) < new Date() ? dateDueColor : dateRegularColor
+    }
+
+    
     useEffect(()=>{
-        
-        setDateColor(getDateColor)
-	}, [])
+        async function fetchData() {
+            setDateColor(getDateColor)
+            const newcard = await api._getData(index)
+            setCard(newcard)
+            // Refresh Data
+            setProgressCurrent(newcard.progress.current)
+            setProgressMax(newcard.progress.max)
+            setIsCompleted(newcard.progress.current >= newcard.progress.max)
+        }
+        const unsubscribe = navigation.addListener('focus', () => {
+            fetchData();
+          });
+      
+          return unsubscribe;
+	}, [navigation])
 
     return (
         <View style={styles.quest_wrapper}>
@@ -30,7 +57,7 @@ export default function BasicQuestItem(props) {
 
                         {/* {Quest Name} */}
                         <View>
-                            <Text style={styles.title}>{props.task.task}</Text>
+                            <Text style={styles.title}>{card.task}</Text>
                         </View>
 
                         {/* {Line} */}
@@ -40,37 +67,61 @@ export default function BasicQuestItem(props) {
                         <View style={styles.reward_wrapper}>
                             <View style={[styles.quest_flexdir, {justifyContent: 'space-between'}]}>
                                 <Text>
-                                    <Text style={styles.point_text}>{props.task.points}</Text>
+                                    <Text style={styles.point_text}>{card.points}</Text>
                                     <Text style={styles.point_symbol}> PPt</Text>
                                 </Text>
                                 
-                                <Text style={[
-                                    styles.progress_text,
-                                    isCompleted ?
-                                    {
-                                        fontSize: 16,
-                                        color: '#eee'
-                                    } :
-                                    {
-                                        fontSize: 24,
-                                        color: '#cff'
+
+                                {/* Add Progress */}
+                                <TouchableOpacity
+                                    onPress={
+                                        async () => {
+                                            if(!isCompleted) {
+                                                await api.changeProgress(index)  
+                                                setIsCompleted(progressCurrent + 1 >= progressMax)
+                                                setProgressCurrent(progressCurrent + 1)
+                                            }
+                                        }
                                     }
-                                ]}>{isCompleted ? 'Completed' : (props.task.progress.current.toString() + '/' + props.task.progress.max.toString())}</Text>
+                                    onLongPress={
+                                        async () => {
+                                            if(!isCompleted) {
+                                                await api.setProgress(index, progressMax)  
+                                                setIsCompleted(true)
+                                            }
+                                        }
+                                    }
+                                    disabled={isCompleted}
+                                    >
+                                    <Text style={[
+                                        styles.progress_text,
+                                        isCompleted ?
+                                        {
+                                            fontSize: 16,
+                                            color: '#eee'
+                                        } :
+                                        {
+                                            fontSize: 24,
+                                            color: '#cff'
+                                        }
+                                    ]}>{isCompleted ? 'Completed' : (progressCurrent.toString() + '/' + progressMax.toString())}</Text>
+                                </TouchableOpacity>
+                                
                             </View>
                         </View>
 
                         {/* {Due Date} */}
                         {
-                            props.task.date.due_date != null &&
+                            card.date.due_date != null &&
                             <Text>
                                 {
                                     true && <Text style={{color:"white"}}>Due: </Text>
                                 }
-                                <Text style={{color: dateColor}}>{new Date(props.task.date.due_date).getDate().toString()}/{(new Date(props.task.date.due_date).getMonth() + 1).toString()}
+                                <Text style={{color: dateColor}}>{new Date(card.date.due_date).getDate().toString()}/{(new Date(card.date.due_date).getMonth() + 1).toString()}
                                 
                                 {
-                                    new Date(props.task.date.due_date).getFullYear() != new Date().getFullYear() ?
-                                    "/" + new Date(props.task.date.due_date).getFullYear().toString()
+                                    new Date(card.date.due_date).getFullYear() != new Date().getFullYear() ?
+                                    "/" + new Date(card.date.due_date).getFullYear().toString()
                                     :
                                     ""
                                 }
@@ -78,9 +129,9 @@ export default function BasicQuestItem(props) {
                                 </Text>
                                 
                                 {
-                                    !props.task.date.full_day && <Text style={{color: dateColor}}>{"  "}
+                                    !card.date.full_day && <Text style={{color: dateColor}}>{"  "}
                                         {
-                                            new Date(props.task.date.due_date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: isHour12 })
+                                            new Date(card.date.due_date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: isHour12 })
                                         }
                                     </Text>
                                 }

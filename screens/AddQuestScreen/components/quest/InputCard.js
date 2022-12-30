@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Text, View, TextInput, StyleSheet, Image, TouchableOpacity, Button, Platform } from 'react-native'
 import InputCardData from './InputCardData'
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import * as api from '../../../../scripts/api'
 
 
 
@@ -14,82 +13,20 @@ export default function InputCard(props) {
     const [isHour12, setIsHour12] = useState(false)
     const [dateColor, setDateColor] = useState(props.task.date.due_date < new Date() ? dateDueColor : dateRegularColor)
 
+    var [pointsTextWidth, setPointsTextWidth] = useState(10)
+    var [progressTextWidth, setProgressTextWidth] = useState(10)
+    var [progressMaxTextWidth, setProgressMaxTextWidth] = useState(10)
+
     var {  task, setTask, points, setPoints, progressCurrent, setProgressCurrent, progressMax, setProgressMax, date_DueDate, setDate_DueDate, date_FullDay, setDate_FullDay } = InputCardData()
 
+
+    // Retrieving Data
     const index = props.index
 
-    var _addData = async (data) => {
-        try {
-            let olddata = await AsyncStorage.getItem("@ToDoList:task");
-            if(olddata == null) {
-                await AsyncStorage.setItem(
-                    "@ToDoList:task",
-                    "[]"
-                );
-            }
-            
-            await AsyncStorage.setItem(
-                "@ToDoList:task",
-                JSON.stringify([...JSON.parse(olddata), data])
-            )
-        } catch (error) {
-        // Error saving data
-        alert('error')
-        }
-    };
-
-    var _getData = async () => {
-        try {
-            let olddata = await AsyncStorage.getItem("@ToDoList:task");
-            if(olddata == null) {
-                await AsyncStorage.setItem(
-                    "@ToDoList:task",
-                    "[]"
-                );
-                return "[]"
-            }
-            return olddata
-        }
-        catch(error) {
-            alert(error)
-        }
-    }
-
-    var _editData = async (data, i) => {
-        console.log("editing index: " + i)
-        try {
-            let olddata = await AsyncStorage.getItem("@ToDoList:task");
-            if(olddata == null) {
-                await AsyncStorage.setItem(
-                    "@ToDoList:task",
-                    "[]"
-                );
-            }
-            
-            if(i == -1) {
-                await AsyncStorage.setItem(
-                    "@ToDoList:task",
-                    JSON.stringify([...JSON.parse(olddata), data])
-                )
-            } else {
-                console.log("REPLACING DATA")
-                let newdata = JSON.parse(olddata)
-                newdata[i] = data
-                await AsyncStorage.setItem(
-                    "@ToDoList:task",
-                    JSON.stringify(newdata)
-                )
-                console.log(await _getData())
-            }
-        } catch (error) {
-        // Error saving data
-        alert('error')
-        }
-    }
 
     async function doneButton() {
         console.log("Task:" + task)
-        await _editData({
+        await api._editData({
             tag:["Daily"],
             task: task == null ? "Lorem Ipsum" : task,
             progress: {current: progressCurrent == null ? 0 : progressCurrent, max: progressMax == null ? 1 : progressMax},
@@ -98,18 +35,14 @@ export default function InputCard(props) {
                 due_date: date_DueDate,
                 full_day: date_FullDay
             }}, index)
-        // await _addData({tag: ["Daily"], task: "Clean House", progress: {current: 0, max:1}, points: 25, date:{due_date:2672048923895 , full_day: false}})
-        
-        console.log(await _getData())
         
         props.navigation.popToTop()
         // props.navigation.push('Home');
     }
 
     useEffect(()=>{
-        console.log("Loading card input fields")
-        if(props.card) {
-            const card = props.card
+        async function fetchData() {
+            const card = await api._getData(index)
             console.log("Found data" + JSON.stringify(card))
             // Importing card data
             setTask(card.task)
@@ -121,12 +54,20 @@ export default function InputCard(props) {
             
             console.log(task)
         }
+
+        console.log("Loading card input fields")
+        if(index != -1) {
+            fetchData()
+        }
         else {
             console.log("Generating new card")
         }
         console.log("Card generated")
 	}, [])
     
+
+
+
     return (
         <>
         <View style={[styles.quest_flexdir, {flexDirection: 'row-reverse'}]}>
@@ -165,7 +106,16 @@ export default function InputCard(props) {
                         <View style={styles.reward_wrapper}>
                             <View style={[styles.quest_flexdir, {justifyContent: 'space-between'}]}>
                                 <View style={{flexDirection: 'row', alignItems: 'flex-end'}}>
-                                    <TextInput style={styles.point_text} keyboardType="number-pad" value={points == null || isNaN(points.toString()) ? null : points.toString()} onChangeText={(text) => setPoints(parseInt(text))} placeholder={"25"}/>
+                                    <TextInput
+                                        style={[
+                                            styles.point_text
+                                        ]}
+                                        multiline
+                                        keyboardType="number-pad"
+                                        value={points == null || isNaN(points.toString()) ? null : points.toString()}
+                                        onChangeText={(text) => setPoints(parseInt(text))}
+                                        placeholder={"25"}
+                                        />
                                     {/* <Text style={styles.point_text}>{props.task.points}</Text> */}
                                     <Text style={styles.point_symbol}> PPt</Text>
                                 </View>
@@ -185,7 +135,7 @@ export default function InputCard(props) {
                                                     lineHeight: 40,
                                                     color: '#cff',
                                                     padding: 0,
-                                                    margin: 0,
+                                                    margin: 0
                                                 }
                                             ]}
                                         keyboardType="number-pad"
@@ -210,7 +160,7 @@ export default function InputCard(props) {
                                                     lineHeight: 40,
                                                     color: '#cff',
                                                     padding: 0,
-                                                    margin: 0,
+                                                    margin: 0
                                                 }
                                             ]}
                                         keyboardType="number-pad"
@@ -355,9 +305,7 @@ const styles = StyleSheet.create(
             fontSize: 14
         },
         progress_text: {
-            lineHeight: 30,
-            width: 'auto'
-            
+            lineHeight: 30
         }
     }
 )
