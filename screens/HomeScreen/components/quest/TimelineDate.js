@@ -66,7 +66,15 @@ export default function TimelineDate(props) {
                                 ?
                                 translate_YESTERDAY
                                 :
-                                new Date(props.date).getDate() + "/" + (new Date(props.date).getMonth() + 1).toString()
+                                new Date(props.date).getDate() + "/" + (new Date(props.date).getMonth() + 1).toString() + 
+
+                                (
+                                    new Date(props.date).getFullYear() === new Date().getFullYear()
+                                    ?
+                                    ""
+                                    :
+                                    "/" + new Date(props.date).getFullYear()
+                                )
                             )
                         )
                     }</Text>
